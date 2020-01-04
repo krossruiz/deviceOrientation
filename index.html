@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body style="background: black; color: lime;">
+  <div style="width: 100vw; height: 100vh;">
+    <div id="threejsCanvas" style="position: absolute"></div>
+    <video id="cameraDisplay" autoplay>
+
+    </video>
+    <div id="orientationEulerLog">
+      No info
+    </div>
+    <button onclick="setZeroOrientation(
+      window.deviceOrientationRadians.alpha,
+      window.deviceOrientationRadians.beta,
+      window.deviceOrientationRadians.gamma
+    )">
+      Zero Orientation
+    </button>
+    <input id="zeroRotationCheckbox" type="checkbox" onchange="toggleZeroRotationEnabled()" />
+    <br/>
+    <text id="zeroOrientationDisplay">
+      Alpha: 0 <br/>
+      Beta: 0 <br/>
+      Gamma: 0 <br/>
+    </text>
+    <br />
+    <text id="handleOrientationLog">
+
+    </text>
+    <div>
+      Manual Orientation
+    </div>
+    <input type="checkbox" onchange="toggleManualOrientation()" />
+    <div>
+      Alpha
+      <input
+        type="range"
+        min="0"
+        max="6.28318530718"
+        value="0"
+        onchange="handleManualOrientationChange(this.value, null, null)"
+      />
+      Beta
+      <input
+        type="range"
+        min="0"
+        max="6.28318530718"
+        value="0"
+        onchange="handleManualOrientationChange(null, this.value, null)"
+      />
+      Gamma
+      <input
+        type="range"
+        min="0"
+        max="6.28318530718"
+        value="0"
+        onchange="handleManualOrientationChange(null, null, this.value)"
+      />
+    </div>
+    <button onclick="toggleFullScreen()">
+      Fullscreen
+    </button>
+  </div>
+
+</body>
+<script src="node_modules/three-js/three.js"></script>
+<script>
+
+  function toggleFullScreen() {
+      var doc = window.document;
+      var docEl = doc.documentElement;
+
+      var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+      var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+      if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+        requestFullScreen.call(docEl);
+      }
+      else {
+        cancelFullScreen.call(doc);
+      }
+    }
+
+
+  let orientationEulerLog = document.getElementById("orientationEulerLog");
+  let zeroRotationEnabled = false;
+  let zeroOrientation = {
+    alpha: 0,
+    beta: 0,
+    gamma: 0
+  };
+  let manualOrientationEnabled = false;
+
+  window.deviceOrientationRadians = {
+    alpha: null,
+    beta: null,
+    gamma: null
+  };
+
+  let manualOrientation = {
+    alpha: 0,
+    beta: 0,
+    gamma: 0
+  }
+
+  function toggleManualOrientation(){
+    manualOrientationEnabled = !manualOrientationEnabled;
+    if(manualOrientationEnabled && zeroRotationEnabled){
+      toggleZeroRotationEnabled();
+    }
+  }
+
+  function handleManualOrientationChange(alpha, beta, gamma){
+    if(alpha != null){
+      manualOrientation.alpha = alpha;
+    }
+    if(beta != null){
+      manualOrientation.beta = beta;
+    }
+    if(gamma != null){
+      manualOrientation.gamma = gamma;
+    }
+  }
+
+  function toggleZeroRotationEnabled() {
+    zeroRotationEnabled = !zeroRotationEnabled;
+    if (!zeroRotationEnabled) {
+      document.getElementById("zeroRotationCheckbox").checked = false;
+    }
+    else {
+      document.getElementById("zeroRotationCheckbox").checked = true;
+      setZeroOrientation(
+        zeroOrientation.alpha,
+        zeroOrientation.beta,
+        zeroOrientation.gamma
+      );
+    }
+  }
+  zeroOrientationDisplay = document.getElementById("zeroOrientationDisplay");
+  function setZeroOrientation(alpha, beta, gamma) {
+    zeroOrientation = {
+      alpha: alpha,
+      beta: beta,
+      gamma: gamma
+    };
+    zeroOrientationDisplay.innerText = "Alpha: " + alpha + "\n" +
+      " Beta: " + beta + "\n" + "Gamma: " + gamma;
+  }
+
+  handleOrientationLog = document.getElementById("handleOrientationLog");
+  function handleOrientation(event) {
+    window.deviceOrientationEuler = event;
+    window.deviceOrientationRadians.alpha = degreesToRadians(event.alpha);
+    window.deviceOrientationRadians.beta = degreesToRadians(event.beta);
+    window.deviceOrientationRadians.gamma = degreesToRadians(event.gamma);
+  }
+
+  function radiansToDegrees(x) {
+    return x * (180 / Math.PI);
+  }
+
+  function degreesToRadians(x) {
+    return x * (Math.PI / 180);
+  }
+
+  window.addEventListener("deviceorientation", handleOrientation, true);
+
+  let scene = new THREE.Scene();
+  let camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight - 200), 0.1, 1000);
+
+  let renderer = new THREE.WebGLRenderer({ alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight - 200);
+  let threejsCanvas = document.getElementById("threejsCanvas");
+  threejsCanvas.appendChild(renderer.domElement);
+
+  let geometry = new THREE.BoxGeometry(1, 1, 1);
+  let material = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
+
+  let light = new THREE.PointLight(0xffffff);
+  light.position.z = 3;
+  scene.add(light);
+
+  let cube = new THREE.Mesh(geometry, material);
+  scene.add(cube);
+
+  camera.position.z = 3;
+
+  navigator.mediaDevices.getUserMedia({
+    video: {
+      width: window.innerWidth,
+      height: window.innerHeight - 200
+    }
+  })
+    .then(function (stream) {
+      let cameraDisplay = document.getElementById("cameraDisplay");
+      cameraDisplay.srcObject = stream;
+      console.log(cameraDisplay)
+      video.onloadedmetadata = function (e) {
+        video.play();
+      }
+    })
+    .catch(function (err) {
+      /* handle the error */
+    });
+
+  let animate = function () {
+    requestAnimationFrame(animate);
+
+    if (window.deviceOrientationRadians.alpha != null) {
+      if (zeroRotationEnabled && !manualOrientationEnabled) {
+        cube.rotation.y = deviceOrientationRadians.gamma - zeroOrientation.gamma;
+        cube.rotation.x = deviceOrientationRadians.beta - zeroOrientation.beta;
+        cube.rotation.z = deviceOrientationRadians.alpha - zeroOrientation.alpha;
+      }
+      if (manualOrientationEnabled){
+        cube.rotation.y = manualOrientation.gamma;
+        cube.rotation.x = manualOrientation.beta;
+        cube.rotation.z = manualOrientation.alpha;        
+      }
+      if(!zeroRotationEnabled && !manualOrientationEnabled) {
+        cube.rotation.y = deviceOrientationRadians.gamma;
+        cube.rotation.x = deviceOrientationRadians.beta;
+        cube.rotation.z = deviceOrientationRadians.alpha;
+      }
+
+      orientationEulerLog.innerText =
+        "Alpha: "
+        + deviceOrientationRadians.alpha.toString()
+        + "\n"
+        + "Beta: "
+        + deviceOrientationRadians.beta.toString()
+        + "\n"
+        + "Gamma: "
+        + deviceOrientationRadians.gamma.toString()
+        ;
+    }
+
+    renderer.render(scene, camera);
+  };
+
+  animate();
+
+</script>
+
+</html>

@@ -1,0 +1,41 @@
+Arguments: 
+  /usr/local/bin/node /usr/share/yarn/bin/yarn.js add threejs
+
+PATH: 
+  /home/x/.local/bin:/home/x/anaconda3/bin:/home/x/anaconda3/condabin:/home/x/.cargo/bin:/home/x/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/android-studio/bin:/opt/flutter/bin:/opt/blender-2.80-8850875866a-linux-glibc224-x86_64:/home/x/mycroft-core:/home/x/Unity/Hub/Editor/2018.3.0b11/Editor
+
+Yarn version: 
+  1.13.0
+
+Node version: 
+  13.1.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/threejs: Not found
+      at Request.params.callback [as _callback] (/usr/share/yarn/lib/cli.js:66255:18)
+      at Request.self.callback (/usr/share/yarn/lib/cli.js:129397:22)
+      at Request.emit (events.js:210:5)
+      at Request.<anonymous> (/usr/share/yarn/lib/cli.js:130369:10)
+      at Request.emit (events.js:210:5)
+      at IncomingMessage.<anonymous> (/usr/share/yarn/lib/cli.js:130291:12)
+      at Object.onceWrapper (events.js:299:28)
+      at IncomingMessage.emit (events.js:215:7)
+      at endReadableNT (_stream_readable.js:1199:12)
+      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+
+npm manifest: 
+  {
+    "name": "lighting-app",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
